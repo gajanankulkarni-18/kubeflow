@@ -20,7 +20,8 @@ spec:
     spec:
       containers:
       - name: manager
-        image: public.ecr.aws/j1r0q0g6/notebooks/notebook-controller
+#        image: public.ecr.aws/j1r0q0g6/notebooks/notebook-controller
+	image: quay.io/ibm/kubeflow-notebook-controller-ppc64le
         command:
           - /manager
         env:

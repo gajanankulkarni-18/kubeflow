@@ -8,7 +8,7 @@ ENV HOME /home/$NB_USER
 ENV SHELL /bin/bash
 
 # args - software versions
-ARG ARCH="amd64"
+ARG ARCH="ppc64le"
 ARG S6_VERSION="v2.2.0.3"
 ARG KUBECTL_VERSION="v1.20.5"
 
