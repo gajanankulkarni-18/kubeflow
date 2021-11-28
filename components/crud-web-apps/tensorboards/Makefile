@@ -1,4 +1,5 @@
-IMG ?= public.ecr.aws/j1r0q0g6/notebooks/tensorboards-web-app
+#IMG ?= public.ecr.aws/j1r0q0g6/notebooks/tensorboards-web-app
+IMG ?= quay.io/ibm/kubeflow-tensorboards-web-app-ppc64le
 TAG ?= $(shell git log -n 1 --pretty=format:"%h" ./)
 DOCKERFILE=tensorboards/Dockerfile
 

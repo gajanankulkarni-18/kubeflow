@@ -14,9 +14,9 @@ commonLabels:
 images:
 #- name: public.ecr.aws/j1r0q0g6/notebooks/volumes-web-app
 #  newName: public.ecr.aws/j1r0q0g6/notebooks/volumes-web-app
--name: kubeflow-volumes-web-app-ppc64le
- newName: kubeflow-volumes-web-app-ppc64le
-  newTag: v1.3.0
+-name: quay.io/ibm/kubeflow-volumes-web-app-ppc64le
+ newName: quay.io/ibm/kubeflow-volumes-web-app-ppc64le
+  newTag: v1.3.0-rc.1
 # We need the name to be unique without the suffix because the original name is what
 # gets used with patches
 configMapGenerator:

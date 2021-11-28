@@ -9,7 +9,8 @@ metadata:
   name: notebook-controller
 build:
   artifacts:
-  - image: gcr.io/kubeflow-ci/notebook-controller
+#  - image: gcr.io/kubeflow-ci/notebook-controller
+  -image: quay.io/ibm/kubeflow-notebook-controller-ppc64le
     # Context should be ${KUBEFLOW_REPO}/components
     context: ..
     kaniko:

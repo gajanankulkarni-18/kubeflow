@@ -1,4 +1,5 @@
-FROM public.ecr.aws/j1r0q0g6/notebooks/notebook-servers/base:master-1831e436
+#FROM public.ecr.aws/j1r0q0g6/notebooks/notebook-servers/base:master-1831e436
+FROM base_docker:latest
 
 USER root
 
@@ -7,8 +8,10 @@ SHELL ["/bin/bash", "-c"]
 
 # args - software versions
 ARG CONDA_VERSION="4.9.2"
-ARG MINIFORGE_ARCH="x86_64"
-ARG MINIFORGE_SHA256="91d5aa5f732b5e02002a371196a2607f839bab166970ea06e6ecc602cb446848"
+#ARG MINIFORGE_ARCH="x86_64"
+#ARG MINIFORGE_SHA256="91d5aa5f732b5e02002a371196a2607f839bab166970ea06e6ecc602cb446848"
+ARG MINIFORGE_ARCH="ppc64le"
+ARG MINIFORGE_SHA256="b86cfc1bf800a3bf09b29bd6e5e9a39e13d1b4f84553f339a5511971bbce9de8"
 ARG MINIFORGE_VERSION="${CONDA_VERSION}-7"
 ARG PIP_VERSION="21.0.1"
 ARG PYTHON_VERSION="3.8.8"
@@ -18,6 +21,9 @@ ARG RSTUDIO_VERSION="1.4.1106"
 ARG R_BASE_VERSION="4.0.3"
 ARG R_RETICULATE_VERSION="1.18"
 ARG R_PNG_VERSION="0.1_7"
+
+
+
 
 # install - binary rstudio dependencies
 RUN apt-get -yq update \
@@ -30,6 +36,14 @@ RUN apt-get -yq update \
     psmisc \
     rrdtool \
     sudo \
+    lsb-release \
+#    ant apparmor-utils autotools-dev build-essential \
+#    ca-certificates cmake fakeroot file g++ git haskell-platform \
+#    libapparmor1 libbz2-dev libcurl4-openssl-dev libedit2 libicu-dev \
+#    libpam-dev libpango1.0-dev libssl-dev libxslt1-dev tcl8.5-dev tk8.5-dev\
+#   libboost-all-dev pkg-config psmisc python-dev python-setuptools \
+#   pandoc pandoc-citeproc unzip uuid-dev wget gfortran libreadline-dev \
+#   xorg-dev libbz2-ocaml-dev liblzma-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -82,10 +96,39 @@ RUN echo "TZ=${TZ}" >> ${R_HOME}/etc/Renviron.site
 USER root
 
 # install - rstudio-server
-RUN curl -sL "https://download2.rstudio.org/server/bionic/${RSTUDIO_ARCH}/rstudio-server-${RSTUDIO_VERSION}-${RSTUDIO_ARCH}.deb" -o /tmp/rstudio-server.deb \
- && echo "${RSTUDIO_SHA256} /tmp/rstudio-server.deb" | sha256sum --check \
- && dpkg -i /tmp/rstudio-server.deb \
- && rm -f /tmp/rstudio-server.deb \
+#RUN curl -sL "https://download2.rstudio.org/server/bionic/${RSTUDIO_ARCH}/rstudio-server-${RSTUDIO_VERSION}-${RSTUDIO_ARCH}.deb" -o /tmp/rstudio-server.deb \
+ #&& echo "${RSTUDIO_SHA256} /tmp/rstudio-server.deb" | sha256sum --check \
+ #&& dpkg -i /tmp/rstudio-server.deb \
+ #&& rm -f /tmp/rstudio-server.deb \
+#gsk
+RUN     wget https://cloud.r-project.org/src/base/R-4/R-${R_BASE_VERSION}.tar.gz && \
+        tar -xvzf R-${R_BASE_VERSION}.tar.gz && cd R-${R_BASE_VERSION} && \
+        ./configure LIBnn=lib  --enable-R-shlib && \
+        make -j4 && make -j4 install
+RUN     wget https://github.com/rstudio/rstudio/archive/v${RSTUDIO_VERSION}.tar.gz && \
+        tar zxvf v${RSTUDIO_VERSION}.tar.gz && \
+        mkdir -p /rstudio-${RSTUDIO_VERSION}/build
+RUN     echo "exit 0" > /rstudio-${RSTUDIO_VERSION}/dependencies/common/install-crashpad && \
+        cd /rstudio-${RSTUDIO_VERSION}/dependencies/linux && \
+        sed -i s/amd64/ppc64el/g ./install-dependencies-focal && \
+        ./install-dependencies-focal && \
+        cd /rstudio-${RSTUDIO_VERSION}/build && \
+        cmake -j4 .. -DRSTUDIO_TARGET=Server -DCMAKE_BUILD_TYPE=Release && \
+        make -j4 install && \
+        useradd -r rstudio-server  && \
+        cp /usr/local/lib/rstudio-server/extras/init.d/debian/rstudio-server /etc/init.d/ && \
+        update-rc.d rstudio-server defaults && \
+        ln -f -s /usr/local/lib/rstudio-server/bin/rstudio-server /usr/sbin/rstudio-server && \
+        mkdir -p /var/run/rstudio-server && \
+        mkdir -p /var/lock/rstudio-server && \
+        mkdir -p /var/log/rstudio-server && \
+        mkdir -p /var/lib/rstudio-server && \
+        set -e && useradd -m -d /home/rstudio -G sudo rstudio && \
+        echo rstudio:rstudio | chpasswd && \
+        rstudio-server online && cd / && \
+        echo -e '#!/bin/bash\ncd /usr/sbin\nrstudio-server start' >> startup.sh && \
+        chmod +x startup.sh \
+#gsk
     # our Kaniko build excludes `/var/run/*` but RStudio needs those files,
     # so we move them to `/run`, wich is actually the same place due to symbolic links
  && mv -n /var/run/rstudio-server* /run \

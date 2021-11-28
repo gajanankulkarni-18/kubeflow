@@ -27,7 +27,8 @@ spec:
         - /manager
         args:
         - --enable-leader-election
-        image: public.ecr.aws/j1r0q0g6/notebooks/tensorboard-controller
+#        image: public.ecr.aws/j1r0q0g6/notebooks/tensorboard-controller
+        image: quay.io/ibm/kubeflow-tensorboard-controller-ppc64le
         name: manager
         resources:
           limits:
